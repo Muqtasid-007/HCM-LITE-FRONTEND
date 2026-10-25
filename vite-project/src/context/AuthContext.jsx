@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
     setLoading(true)
     try {
       const status = await authApi.setupStatus()
-      setInitializationRequired(Boolean(status?.initializationRequired))
+      setInitializationRequired(status?.isSetupComplete === false || Boolean(status?.initializationRequired))
       if (getStoredToken()) {
         try {
           await refreshUser()
@@ -57,7 +57,9 @@ export function AuthProvider({ children }) {
           clearSession()
         }
       }
-    } catch {
+    } catch (error) {
+      const url = error.requestUrl || 'http://localhost:5000/api/setup/status'
+      console.error(`[auth] Could not determine setup status from ${url}`, error)
       setInitializationRequired(false)
     } finally {
       setLoading(false)

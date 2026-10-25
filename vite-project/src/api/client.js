@@ -1,8 +1,10 @@
 import axios from 'axios'
 import { getStoredToken } from '../utils/storage'
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: API_BASE_URL,
   timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
@@ -21,17 +23,23 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (!error.response) {
+      const url = `${error.config?.baseURL || API_BASE_URL}${error.config?.url || ''}`
+      console.error(`[api] Backend unreachable: ${url}`, error.message)
+      window.dispatchEvent(new CustomEvent('hcm:toast', { detail: { type: 'error', message: `Backend unreachable at ${url}` } }))
+    }
     const status = error.response?.status
     const data = error.response?.data
     const parsed =
       data instanceof Blob
-        ? { status, message: 'Request failed', errors: [] }
+        ? { status, message: 'Request failed', errors: [], requestUrl: error.config?.url }
         : {
             status,
             message: data?.message || error.message || 'Request failed',
             errors: data?.errors || [],
             data,
             requestId: data?.requestId || error.response?.headers?.['x-request-id'],
+            requestUrl: `${error.config?.baseURL || API_BASE_URL}${error.config?.url || ''}`,
           }
 
     if (status === 401 && !error.config?.skipAuthRedirect) {
