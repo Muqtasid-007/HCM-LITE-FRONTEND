@@ -1,7 +1,11 @@
 import axios from 'axios'
 import { getStoredToken } from '../utils/storage'
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+const configuredBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
+export const API_BASE_URL =
+  configuredBaseUrl && /\/api(?:\/v1)?$/.test(configuredBaseUrl)
+    ? configuredBaseUrl
+    : `${configuredBaseUrl || 'http://localhost:5000'}/api`
 
 const client = axios.create({
   baseURL: API_BASE_URL,
