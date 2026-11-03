@@ -178,9 +178,7 @@ export function UsersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">User Administration</h1>
-        <p className="text-sm text-slate-500">
-          Admin portal for managing logins, creating staff accounts, resetting credentials, and offboarding employees.
-        </p>
+       
       </div>
 
       {error ? <Alert>{error}</Alert> : null}
@@ -218,14 +216,9 @@ export function UsersPage() {
           {/* Create User Login Card */}
           <Card>
             <h2 className="mb-2 text-base font-semibold text-slate-900">Provision User Account</h2>
-            <p className="mb-3 text-xs text-slate-500">
-              Generates a new login with the selected role (HR or Employee) and an initial temporary password.
-            </p>
+           
             <form className="flex flex-wrap gap-3" onSubmit={createUser}>
-              <Select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
-                <option value="HR">HR</option>
-                
-              </Select>
+              <p className="text-sm text-slate-500">HR</p>
               <Input
                 placeholder="user@company.com"
                 type="email"

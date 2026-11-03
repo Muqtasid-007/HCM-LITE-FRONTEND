@@ -59,6 +59,11 @@ export function LeaveManagementPage() {
     load().catch((err) => setError(apiErrorText(err)))
   }, [query.page, query.state, user?.employeeId])
 
+  useEffect(() => {
+    const refresh = setInterval(() => load().catch(() => {}), 15000)
+    return () => clearInterval(refresh)
+  }, [query.page, query.state, user?.employeeId, user?.role])
+
   async function apply(event) {
     event.preventDefault()
     const errors = fieldErrors(form, {
@@ -118,9 +123,7 @@ export function LeaveManagementPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Leave management</h1>
-          <p className="text-sm text-slate-500">
-            Skip weekends and holidays per company policy. Pending applications do not reserve quota. Started requests cannot be cancelled.
-          </p>
+         
         </div>
         {linked ? <Button onClick={() => setOpen(true)}>Apply for leave</Button> : null}
       </div>
@@ -193,7 +196,7 @@ export function LeaveManagementPage() {
                         Cancel
                       </Button>
                     ) : null}
-                    {user?.role === 'HR' && row.state === 'pending' ? (
+                    {['Admin', 'HR'].includes(user?.role) && row.state === 'pending' ? (
                       isOwn ? (
                         <span className="text-xs text-slate-400 italic">Self-service (cannot review)</span>
                       ) : (

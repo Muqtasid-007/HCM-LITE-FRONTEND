@@ -65,13 +65,37 @@ export function AttendanceBoardPage() {
 
   async function loadCalendar() {
     if (staff && !canCheckIn(user)) return
-    const data = await attendanceApi.list({ from: monthStart(month), to: monthEnd(month), limit: 100 })
-    setCalendar(data.items || [])
+    const from = monthStart(month), to = monthEnd(month)
+    const [data, leaveData] = await Promise.all([
+      attendanceApi.list({ from, to, limit: 100 }),
+      leaveApi.list({ from, to, state: 'approved', limit: 100 }),
+    ])
+    const rows = new Map((data.items || []).map((row) => [row.date, row]))
+    for (const request of leaveData.items || []) {
+      for (const day of request.days || []) {
+        if (day.date >= from && day.date <= to) {
+          const existing = rows.get(day.date)
+          if (!existing?.checkIn) rows.set(day.date, { ...existing, _id: existing?._id || `leave-${request._id}-${day.date}`, date: day.date, status: 'on_leave' })
+        }
+      }
+    }
+    const weekday = new Date(`${today}T00:00:00Z`).getUTCDay() || 7
+    const todayIsWorking = !policy?.weekendDays?.includes(weekday)
+      && !policy?.holidays?.some((holiday) => holiday.date === today && holiday.active !== false)
+    if (today >= from && today <= to && todayIsWorking && !rows.has(today)) {
+      rows.set(today, { _id: `today-${today}`, date: today, status: 'absent' })
+    }
+    setCalendar([...rows.values()].sort((a, b) => b.date.localeCompare(a.date)))
   }
 
   useEffect(() => {
     Promise.all([loadBoard(), loadCorrections(), loadCalendar()]).catch((err) => setError(apiErrorText(err)))
   }, [date, user?.role, month])
+
+  useEffect(() => {
+    const refresh = setInterval(() => loadCalendar().catch(() => {}), 15000)
+    return () => clearInterval(refresh)
+  }, [month, user?.role, user?.employeeId])
 
   const summary = useMemo(() => {
     const counts = { present: 0, late: 0, open: 0, absent: 0, on_leave: leaves.length }
@@ -151,7 +175,7 @@ export function AttendanceBoardPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{staff ? 'Attendance board' : 'My attendance'}</h1>
-          <p className="text-sm text-slate-500">Server-stamped check-in/out. Corrections require both timestamps on the company-local date.</p>
+          
         </div>
         <div className="flex flex-wrap gap-2">
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -209,7 +233,7 @@ export function AttendanceBoardPage() {
             {calendar.map((row) => (
               <div key={row._id} className="rounded-xl border border-slate-200 p-3 text-sm">
                 <p className="font-medium">{row.date.slice(8)}</p>
-                <Badge tone={statusTone(row.status)}>{row.status}</Badge>
+                <Badge tone={statusTone(row.status)}>{row.status === 'on_leave' ? 'Leave' : row.status}</Badge>
                 {row.late ? <span className="ml-1 text-xs text-amber-600 font-medium">Late</span> : null}
               </div>
             ))}

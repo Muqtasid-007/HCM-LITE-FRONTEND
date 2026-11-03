@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { attendanceApi } from '../../api/attendanceApi'
+import { leaveApi } from '../../api/leaveApi'
 import { useToast } from '../feedback/Toast'
 import { Button } from '../ui/Button'
 import { Card, Badge } from '../ui/Card'
@@ -11,17 +12,23 @@ export function CheckInWidget({ timezone = 'Asia/Karachi', canAct = false }) {
   const today = companyToday(timezone)
   const [now, setNow] = useState(new Date())
   const [record, setRecord] = useState(null)
+  const [onLeave, setOnLeave] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function load() {
-    const data = await attendanceApi.list({ from: today, to: today, limit: 1 })
+    const [data, leaveData] = await Promise.all([
+      attendanceApi.list({ from: today, to: today, limit: 1 }),
+      leaveApi.list({ from: today, to: today, state: 'approved', limit: 100 }),
+    ])
     setRecord(data?.items?.[0] || null)
+    setOnLeave((leaveData?.items || []).some((request) => request.days?.some((day) => day.date === today)))
   }
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000)
     load().catch(() => {})
-    return () => clearInterval(timer)
+    const refresh = setInterval(() => load().catch(() => {}), 15000)
+    return () => { clearInterval(timer); clearInterval(refresh) }
   }, [today])
 
   async function act(kind) {
@@ -47,8 +54,8 @@ export function CheckInWidget({ timezone = 'Asia/Karachi', canAct = false }) {
           </p>
           <p className="text-sm text-slate-500">{today}</p>
         </div>
-        <Badge tone={record?.checkOut ? 'emerald' : record?.checkIn ? 'amber' : 'slate'}>
-          {record?.status || 'Not started'}
+        <Badge tone={onLeave && !record?.checkIn ? 'slate' : record?.status === 'late' ? 'amber' : record?.checkIn ? 'emerald' : 'rose'}>
+          {record?.checkIn ? record.status : onLeave ? 'Leave' : record?.status || 'Absent'}
         </Badge>
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">

@@ -71,6 +71,11 @@ export function DashboardPage() {
     load()
   }, [filters.from, filters.to, filters.departmentId, user?.role])
 
+  useEffect(() => {
+    const refresh = setInterval(() => load(), 15000)
+    return () => clearInterval(refresh)
+  }, [filters.from, filters.to, filters.departmentId, user?.role])
+
   async function loadSummary() {
     setSummarizing(true)
     try {

@@ -202,9 +202,7 @@ export function OrganizationPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Organization Setup</h1>
-          <p className="text-sm text-slate-500">
-            Configure company units (Departments & Designations) and operating policies.
-          </p>
+         
         </div>
       </div>
 
