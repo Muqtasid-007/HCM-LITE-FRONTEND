@@ -97,7 +97,7 @@ export function EmployeeProfilePage() {
               <Button variant="outline">Directory</Button>
             </Link>
           ) : null}
-          {user?.role === 'HR' ? (
+          {isStaff(user) ? (
             <Link to={`/employees/${employee._id}/edit`}>
               <Button>Edit profile</Button>
             </Link>

@@ -60,10 +60,10 @@ export default function App() {
                     <Route path="/employees" element={<ProtectedRoute roles={['Admin', 'HR']} />}>
                       <Route index element={<EmployeeDirectoryPage />} />
                     </Route>
-                    <Route path="/employees/new" element={<ProtectedRoute roles={['HR']} />}>
+                    <Route path="/employees/new" element={<ProtectedRoute roles={['Admin', 'HR']} />}>
                       <Route index element={<EmployeeCreateEditPage />} />
                     </Route>
-                    <Route path="/employees/:id/edit" element={<ProtectedRoute roles={['HR']} />}>
+                    <Route path="/employees/:id/edit" element={<ProtectedRoute roles={['Admin', 'HR']} />}>
                       <Route index element={<EmployeeCreateEditPage />} />
                     </Route>
                     <Route path="/employees/:id" element={<EmployeeProfilePage />} />

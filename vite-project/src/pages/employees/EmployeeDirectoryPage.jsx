@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button'
 import { Card, Badge } from '../../components/ui/Card'
 import { Input, Select, Textarea } from '../../components/ui/Input'
 import { Pagination, Table } from '../../components/ui/Table'
-import { useAuth } from '../../context/AuthContext'
+import { isStaff, useAuth } from '../../context/AuthContext'
 import { collectionFrom } from '../../utils/params'
 import { statusTone, unitName } from '../../utils/format'
 import { apiErrorText } from '../../utils/validation'
@@ -16,7 +16,7 @@ import { apiErrorText } from '../../utils/validation'
 export function EmployeeDirectoryPage() {
   const { user, units } = useAuth()
   const toast = useToast()
-  const isHr = user?.role === 'HR'
+  const canManage = isStaff(user)
   const [query, setQuery] = useState({ page: 1, limit: 10, search: '', departmentId: '', status: '', sort: 'name' })
   const [searchInput, setSearchInput] = useState('')
   const [collection, setCollection] = useState({ items: [], total: 0, page: 1, limit: 10 })
@@ -70,7 +70,7 @@ export function EmployeeDirectoryPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {isHr ? (
+          {canManage ? (
             <>
               <Button variant="outline" onClick={() => { setImportOpen(true); setDryRun(null); }}>
                 Import CSV
@@ -165,7 +165,7 @@ export function EmployeeDirectoryPage() {
                   <Link className="text-xs text-slate-600 hover:text-slate-900 font-medium" to={`/employees/${row._id}`}>
                     Profile
                   </Link>
-                  {isHr ? (
+                  {canManage ? (
                     <Link className="text-xs text-emerald-700 hover:text-emerald-900 font-medium ml-2" to={`/employees/${row._id}/edit`}>
                       Edit
                     </Link>
