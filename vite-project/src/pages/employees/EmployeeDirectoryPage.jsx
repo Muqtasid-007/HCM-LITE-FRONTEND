@@ -65,9 +65,7 @@ export function EmployeeDirectoryPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Employee Directory</h1>
-          <p className="text-sm text-slate-500">
-            Company personnel directory with server-side substring search, unit filtering, and status filters.
-          </p>
+          
         </div>
         <div className="flex flex-wrap gap-2">
           {canManage ? (
