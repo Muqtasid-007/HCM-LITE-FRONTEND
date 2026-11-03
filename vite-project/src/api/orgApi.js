@@ -9,8 +9,10 @@ export const orgApi = {
   deleteUnit: (id) => unwrap(client.delete(`/organization/units/${id}`)),
   getUsers: (query) => unwrap(client.get('/users', { params: pickParams(query, ['page', 'limit', 'search']) })),
   createHr: (body) => unwrap(client.post('/users/hr', body)),
+
   createUser: (body) => unwrap(client.post('/users', body)),
   deleteUser: (id) => unwrap(client.delete(`/users/${id}`)),
+
   resetUser: (id) => unwrap(client.post(`/users/${id}/reset`, {})),
   deactivateUser: (id) => unwrap(client.post(`/users/${id}/deactivate`, {})),
   activateUser: (id) => unwrap(client.post(`/users/${id}/activate`, {})),
