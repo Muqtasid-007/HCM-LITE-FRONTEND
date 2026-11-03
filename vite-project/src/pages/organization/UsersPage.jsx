@@ -224,7 +224,7 @@ export function UsersPage() {
             <form className="flex flex-wrap gap-3" onSubmit={createUser}>
               <Select value={newUserRole} onChange={(e) => setNewUserRole(e.target.value)}>
                 <option value="HR">HR</option>
-                <option value="Employee">Employee</option>
+                
               </Select>
               <Input
                 placeholder="user@company.com"
