@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { attendanceApi } from '../../api/attendanceApi'
 import { leaveApi } from '../../api/leaveApi'
 import { useToast } from '../feedback/Toast'
@@ -15,21 +15,21 @@ export function CheckInWidget({ timezone = 'Asia/Karachi', canAct = false }) {
   const [onLeave, setOnLeave] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  async function load() {
+  const load = useCallback(async () => {
     const [data, leaveData] = await Promise.all([
       attendanceApi.list({ from: today, to: today, limit: 1 }),
       leaveApi.list({ from: today, to: today, state: 'approved', limit: 100 }),
     ])
     setRecord(data?.items?.[0] || null)
     setOnLeave((leaveData?.items || []).some((request) => request.days?.some((day) => day.date === today)))
-  }
+  }, [today])
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000)
+    const timer = setInterval(() => setNow(new Date()), 60000)
     load().catch(() => {})
     const refresh = setInterval(() => load().catch(() => {}), 15000)
     return () => { clearInterval(timer); clearInterval(refresh) }
-  }, [today])
+  }, [load])
 
   async function act(kind) {
     setLoading(true)

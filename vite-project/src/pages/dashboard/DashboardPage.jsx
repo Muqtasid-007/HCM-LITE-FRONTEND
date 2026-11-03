@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { analyticsApi } from '../../api/analyticsApi'
 import { employeeApi } from '../../api/employeeApi'
@@ -53,28 +53,23 @@ export function DashboardPage() {
 
   const departments = useMemo(() => units.filter((unit) => unit.kind === 'department'), [units])
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
       const query = { from: filters.from, to: filters.to }
-      if (isStaff(user) && filters.departmentId) query.departmentId = filters.departmentId
+      if ((user?.role === 'Admin' || user?.role === 'HR') && filters.departmentId) query.departmentId = filters.departmentId
       setData(await analyticsApi.dashboard(query))
     } catch (err) {
       setError(apiErrorText(err, 'Could not load dashboard analytics'))
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters.departmentId, filters.from, filters.to, user])
 
   useEffect(() => {
     load()
-  }, [filters.from, filters.to, filters.departmentId, user?.role])
-
-  useEffect(() => {
-    const refresh = setInterval(() => load(), 15000)
-    return () => clearInterval(refresh)
-  }, [filters.from, filters.to, filters.departmentId, user?.role])
+  }, [load])
 
   async function loadSummary() {
     setSummarizing(true)
@@ -256,17 +251,15 @@ export function DashboardPage() {
       {!loading && data ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <h2 className="mb-3 text-lg font-semibold text-slate-900">Attendance Trend (Past 14 Days)</h2>
+            <h2 className="mb-3 text-lg font-semibold text-slate-900">Daily Employee Attendance (Past 14 Days)</h2>
             <Table
-              rows={(data.trend || []).slice(-14)}
-              rowKey="date"
-              empty="No attendance activity in this range"
+              rows={data.attendanceDetails || []}
+              empty="No employee attendance activity in this range"
               columns={[
                 { key: 'date', header: 'Date', render: (row) => <span className="font-mono text-xs">{row.date}</span> },
-                { key: 'present', header: 'Present', render: (row) => <span className="text-emerald-700 font-medium">{row.present}</span> },
-                { key: 'late', header: 'Late', render: (row) => <span className="text-amber-700">{row.late}</span> },
-                { key: 'absent', header: 'Absent', render: (row) => <span className="text-rose-700">{row.absent}</span> },
-                { key: 'on_leave', header: 'On Leave', render: (row) => <span>{row.on_leave}</span> },
+                { key: 'employee', header: 'Employee Name', render: (row) => <Link className="font-medium text-emerald-700 hover:underline" to={`/employees/${row.employee._id}`}>{row.employee.name}</Link> },
+                { key: 'role', header: 'Role', render: (row) => row.employee.role },
+                { key: 'status', header: 'Status', render: (row) => <Badge tone={row.status === 'late' ? 'amber' : row.status === 'absent' ? 'rose' : row.status === 'on_leave' ? 'slate' : 'emerald'}>{row.status === 'on_leave' ? 'On Leave' : row.status.charAt(0).toUpperCase() + row.status.slice(1)}</Badge> },
               ]}
             />
           </Card>
