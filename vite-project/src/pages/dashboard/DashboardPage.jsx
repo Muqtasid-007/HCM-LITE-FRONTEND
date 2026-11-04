@@ -4,6 +4,7 @@ import { analyticsApi } from '../../api/analyticsApi'
 import { employeeApi } from '../../api/employeeApi'
 import { aiApi } from '../../api/aiApi'
 import { CheckInWidget } from '../../components/dashboard/CheckInWidget'
+import { AttendanceAnalytics } from '../../components/dashboard/AttendanceAnalytics'
 import { Modal } from '../../components/common/Modal'
 import { Alert, EmptyState, SkeletonCards } from '../../components/feedback/Skeleton'
 import { useToast } from '../../components/feedback/Toast'
@@ -194,6 +195,7 @@ export function DashboardPage() {
               </Link>
             </div>
           </Card>
+          <AttendanceAnalytics />
         </>
       ) : null}
 
