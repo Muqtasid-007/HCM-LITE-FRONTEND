@@ -33,8 +33,18 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (!error.response) {
-      const message = 'Server is waking up, please try again in a moment.'
-      console.warn('[api] Server connection failed or timed out', error.message)
+      const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false
+      const isTimeout = ['ECONNABORTED', 'ETIMEDOUT'].includes(error.code)
+      const message = isOffline
+        ? 'You appear to be offline. Check your internet connection and try again.'
+        : isTimeout
+          ? 'Server is waking up, please try again in a moment.'
+          : 'Could not reach the server. Check your connection; a browser CORS or preflight block may also prevent access.'
+      console.error('[api] Request failed without an HTTP response (possible network or CORS/preflight issue)', {
+        message: error.message,
+        response: error.response,
+        error,
+      })
       window.dispatchEvent(new CustomEvent('hcm:toast', { detail: { type: 'error', message } }))
       error.userMessage = message
     }
@@ -65,14 +75,14 @@ client.interceptors.response.use(
     if (status === 429) {
       window.dispatchEvent(
         new CustomEvent('hcm:toast', {
-          detail: { type: 'error', message: 'Too many requests. Please wait and try again.' },
+          detail: { type: 'error', message: data?.message || 'Too many requests. Please wait and try again.' },
         }),
       )
     }
     if (status >= 500) {
       window.dispatchEvent(
         new CustomEvent('hcm:toast', {
-          detail: { type: 'error', message: 'Server error. Please try again later.' },
+          detail: { type: 'error', message: data?.message || 'Server error. Please try again later.' },
         }),
       )
     }
