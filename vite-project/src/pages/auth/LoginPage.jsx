@@ -34,7 +34,7 @@ export function LoginPage() {
       if (data.user?.mustChangePassword) navigate('/change-password', { replace: true })
       else navigate(location.state?.from || '/dashboard', { replace: true })
     } catch (error) {
-      setAlert(error.status === 401 ? 'Invalid credentials' : apiErrorText(error, 'Unable to sign in'))
+      setAlert(apiErrorText(error, 'Unable to sign in'))
     } finally {
       setLoading(false)
     }
