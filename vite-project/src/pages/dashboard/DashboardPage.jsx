@@ -267,6 +267,7 @@ export function DashboardPage() {
           </Card>
           <Card>
             <h2 className="mb-3 text-lg font-semibold text-slate-900">Departmental Overview</h2>
+            <p className="mb-3 text-xs text-slate-500">Employee counts include anyone with that status during the selected range; day totals are employee-days.</p>
             <Table
               rows={data.byDepartment || []}
               rowKey="departmentId"
@@ -274,7 +275,8 @@ export function DashboardPage() {
               columns={[
                 { key: 'departmentId', header: 'Department', render: (row) => unitName(units, row.departmentId) },
                 { key: 'headcount', header: 'Headcount' },
-                { key: 'absent', header: 'Absent' },
+                { key: 'present', header: 'Present', render: (row) => <div><span className="font-semibold text-emerald-700">{row.presentEmployees} / {row.totalEmployees} employees</span><p className="text-xs text-slate-500">{row.present} present days · {row.late} late days</p></div> },
+                { key: 'absent', header: 'Absent', render: (row) => <div><span className="font-semibold text-rose-700">{row.absentEmployees} employees</span><p className="text-xs text-slate-500">{row.absent} absent days</p></div> },
                 { key: 'absenteeismPercent', header: 'Absenteeism', render: (row) => formatPercent(row.absenteeismPercent) },
               ]}
             />
