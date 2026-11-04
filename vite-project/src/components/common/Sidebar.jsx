@@ -38,9 +38,15 @@ export function Sidebar({ onNavigate }) {
 
   return (
     <aside className="flex h-full flex-col bg-slate-900 text-slate-200">
-      <div className="border-b border-slate-800 px-5 py-5">
-        <p className="text-xs font-semibold tracking-[0.2em] text-emerald-400">HCM LITE</p>
-        <p className="mt-1 text-lg font-semibold text-white">People Ops</p>
+      <div className="flex items-center gap-3 border-b border-slate-800 px-5 py-5">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="shrink-0">
+          <rect width="32" height="32" rx="8" fill="#059669" />
+          <path d="M10 16L14 20L22 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <div>
+          <p className="text-xs font-semibold tracking-[0.2em] text-emerald-400">HCM LITE</p>
+          <p className="mt-1 text-lg font-semibold leading-tight text-white">People Ops</p>
+        </div>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Primary">
         {visible.map((link) => {
