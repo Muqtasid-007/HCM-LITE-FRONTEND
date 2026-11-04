@@ -2,11 +2,14 @@ import axios from 'axios'
 import { getStoredToken } from '../utils/storage'
 
 const DEFAULT_API_BASE_URL = 'https://hcm-lite-backend-u2yu.onrender.com/api/v1'
-const configuredBaseUrl = (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')
+const configuredBaseUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL)
+  .replace(/\/+$/, '')
 export const API_BASE_URL =
   configuredBaseUrl && /\/api(?:\/v1)?$/.test(configuredBaseUrl)
     ? configuredBaseUrl
     : `${configuredBaseUrl}/api/v1`
+
+console.info(`[api] Resolved API base URL: ${API_BASE_URL}`)
 
 const client = axios.create({
   baseURL: API_BASE_URL,
