@@ -267,7 +267,7 @@ export function DashboardPage() {
           </Card>
           <Card>
             <h2 className="mb-3 text-lg font-semibold text-slate-900">Departmental Overview</h2>
-            <p className="mb-3 text-xs text-slate-500">Employee counts include anyone with that status during the selected range; day totals are employee-days.</p>
+            
             <Table
               rows={data.byDepartment || []}
               rowKey="departmentId"
