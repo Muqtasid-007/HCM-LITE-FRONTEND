@@ -1,15 +1,17 @@
 import axios from 'axios'
 import { getStoredToken } from '../utils/storage'
 
-const configuredBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
+const DEFAULT_API_BASE_URL = 'https://hcm-lite-backend-u2yu.onrender.com/api/v1'
+const configuredBaseUrl = (import.meta.env.VITE_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')
 export const API_BASE_URL =
   configuredBaseUrl && /\/api(?:\/v1)?$/.test(configuredBaseUrl)
     ? configuredBaseUrl
-    : `${configuredBaseUrl || 'http://localhost:5000'}/api`
+    : `${configuredBaseUrl}/api/v1`
 
 const client = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 20000,
+  // Render may need several seconds to wake a sleeping instance.
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -28,9 +30,10 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (!error.response) {
-      const url = `${error.config?.baseURL || API_BASE_URL}${error.config?.url || ''}`
-      console.error(`[api] Backend unreachable: ${url}`, error.message)
-      window.dispatchEvent(new CustomEvent('hcm:toast', { detail: { type: 'error', message: `Backend unreachable at ${url}` } }))
+      const message = 'Server is waking up, please try again in a moment.'
+      console.warn('[api] Server connection failed or timed out', error.message)
+      window.dispatchEvent(new CustomEvent('hcm:toast', { detail: { type: 'error', message } }))
+      error.userMessage = message
     }
     const status = error.response?.status
     const data = error.response?.data
@@ -39,7 +42,7 @@ client.interceptors.response.use(
         ? { status, message: 'Request failed', errors: [], requestUrl: error.config?.url }
         : {
             status,
-            message: data?.message || error.message || 'Request failed',
+            message: error.userMessage || data?.message || error.message || 'Request failed',
             errors: data?.errors || [],
             data,
             requestId: data?.requestId || error.response?.headers?.['x-request-id'],
